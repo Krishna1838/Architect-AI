@@ -1,0 +1,334 @@
+:root {
+    --primary: #6c5ce7;
+    --secondary: #a29bfe;
+    --bg: #f5f6fa;
+    --text: #2d3436;
+    --white: #ffffff;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 98%;
+    margin: 0 auto;
+    background: var(--white);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--primary);
+    margin: 0;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 15px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 10px 20px;
+    color: #636e72;
+    transition: all 0.3s;
+    border-radius: 8px;
+}
+
+.tab-btn.active {
+    background-color: var(--primary);
+    color: var(--white);
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.5s;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+textarea {
+    width: 100%;
+    height: 100px;
+    padding: 12px;
+    border: 2px solid #dfe6e9;
+    border-radius: 8px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+.action-btn {
+    background-color: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 12px 30px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.3s;
+}
+
+.action-btn:hover {
+    background-color: #5849be;
+}
+
+.loading {
+    text-align: center;
+    margin: 20px 0;
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.hidden {
+    display: none;
+}
+
+.glass-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+/* Results Styling */
+.model-card {
+    border: 1px solid #eee;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    background: #fff;
+    border-left: 5px solid var(--primary);
+}
+
+.model-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.metrics {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.metric-badge {
+    background: #dfe6e9;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.code-block {
+    background: #2d3436;
+    color: #fab1a0;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: monospace;
+}
+
+.status-box {
+    background: #e3f2fd;
+    color: #0d47a1;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-family: monospace;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.markdown-body {
+    background: #ffffff;
+    padding: 50px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    margin-top: 30px;
+    font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: #333;
+    line-height: 1.7;
+}
+
+/* Professional Document Headers */
+.markdown-body h1 {
+    font-size: 2.8em;
+    color: #2d3436;
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: 15px;
+    margin-bottom: 40px;
+    text-align: center;
+    letter-spacing: -1px;
+}
+
+.markdown-body h2 {
+    font-size: 1.8em;
+    color: var(--primary);
+    margin-top: 50px;
+    margin-bottom: 25px;
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-left: 6px solid var(--primary);
+    border-radius: 0 8px 8px 0;
+}
+
+.markdown-body h3 {
+    font-size: 1.4em;
+    color: #444;
+    margin-top: 30px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+/* Abstract / Executive Summary Styling */
+.markdown-body p {
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    color: #4a4a4a;
+}
+
+/* Enhanced Table Styling */
+.markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 30px 0;
+    font-size: 1rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.markdown-body thead tr {
+    background-color: var(--primary);
+    color: var(--white);
+    text-align: left;
+}
+
+.markdown-body th {
+    padding: 18px 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.markdown-body td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    color: #555;
+}
+
+.markdown-body tbody tr:nth-child(even) {
+    background-color: #fcfcfc;
+}
+
+.markdown-body tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Code Blocks & Folder Structure */
+.markdown-body pre {
+    background: #282c34;
+    color: #abb2bf;
+    padding: 25px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    margin: 25px 0;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    border-left: 6px solid #a29bfe;
+}
+
+.markdown-body code {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    background-color: #f0f2f5;
+    color: #d63031;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.markdown-body pre code {
+    background-color: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 1em;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.code-wrapper {
+    position: relative;
+    margin-top: 10px;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.copy-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.saved-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}

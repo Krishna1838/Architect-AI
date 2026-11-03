@@ -1,0 +1,5 @@
+fullname,Official Providers,Available on the hub,Flagged,#Params (B),Average ⬆️,MMLU,GSM8K,Architecture,Hub License
+Gemini 1.5 Pro,True,True,False,0,85.0,81.9,92.0,Transformer,Proprietary
+GPT-4o,True,True,False,0,88.0,88.7,95.0,Transformer,Proprietary
+meta-llama/Llama-3-70B,True,True,False,70,82.0,82.0,85.0,Llama,Open
+mistralai/Mistral-7B,True,True,False,7,60.0,60.0,50.0,Mistral,Apache 2.0

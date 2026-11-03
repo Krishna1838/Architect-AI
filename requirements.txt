@@ -1,0 +1,17 @@
+pandas
+numpy
+google-generativeai
+google-cloud-storage
+google-cloud-bigquery
+python-dotenv
+deep-translator
+langdetect
+flask
+flask-cors
+firebase-admin
+googlesearch-python
+qdrant-client>=1.9.0
+grpcio
+beautifulsoup4
+requests
+gunicorn

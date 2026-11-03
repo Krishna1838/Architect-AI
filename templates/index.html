@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArchitectAI: From idea to architecture in seconds</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-rocket"></i> ArchitectAI</h1>
+            <p>From idea to architecture in seconds</p>
+        </header>
+
+        <nav>
+            <button class="tab-btn active" onclick="switchTab('finder')" data-tab="finder"><i class="fas fa-search"></i> Perfect LLM Finder</button>
+            <button class="tab-btn" onclick="switchTab('architect')" data-tab="architect"><i class="fas fa-drafting-compass"></i> Project Architect</button>
+            <button class="tab-btn" onclick="switchTab('saved')" data-tab="saved"><i class="fas fa-folder-open"></i> Saved</button>
+        </nav>
+
+        <!-- LLM Finder Section -->
+        <section id="finder" class="tab-content active">
+            <div class="input-group">
+                <label>Describe your task:</label>
+                <textarea id="finder-task" placeholder="E.g., Chatbot that answers medical questions..."></textarea>
+            </div>
+            <div class="input-group">
+                <label>Max Model Size (Billion Params): <span id="finder-size-val">15</span>B</label>
+                <input type="range" id="finder-size" min="1" max="70" value="15" oninput="document.getElementById('finder-size-val').innerText = this.value">
+            </div>
+            <div class="input-group">
+                <label>Number of Suggestions: <span id="finder-topk-val">5</span></label>
+                <input type="range" id="finder-topk" min="1" max="10" value="5" oninput="document.getElementById('finder-topk-val').innerText = this.value">
+            </div>
+            <button class="action-btn" onclick="findModels()">Find Models</button>
+            
+            <div id="finder-loading" class="loading hidden"><i class="fas fa-spinner fa-spin"></i> Analyzing benchmarks...</div>
+            <div id="finder-results"></div>
+        </section>
+
+        <!-- Project Architect Section -->
+        <section id="architect" class="tab-content">
+            <div class="input-group">
+                <label>Describe your project idea:</label>
+                <textarea id="architect-task" placeholder="E.g., I want to build a real-time chat application using Python and WebSockets..."></textarea>
+            </div>
+            <div class="input-group">
+                <label>Max Model Size (Billion Params): <span id="architect-size-val">15</span>B</label>
+                <input type="range" id="architect-size" min="1" max="70" value="15" oninput="document.getElementById('architect-size-val').innerText = this.value">
+            </div>
+            <button class="action-btn" onclick="generateBlueprint()">Generate Blueprint</button>
+            <button id="regenerate-btn" class="action-btn hidden" onclick="generateBlueprint()" style="margin-top: 10px; background-color: #a29bfe;"><i class="fas fa-sync-alt"></i> Regenerate</button>
+
+            <div id="architect-status" class="status-box hidden"></div>
+            
+            <div id="architect-actions" class="hidden" style="margin-bottom: 20px; text-align: right;">
+                <button class="tab-btn active" onclick="downloadBlueprint()"><i class="fa-solid fa-download"></i> Download Report</button>
+                <button class="tab-btn" onclick="saveBlueprint()"><i class="fa-solid fa-floppy-disk"></i> Save Project</button>
+            </div>
+
+            <!-- Constructed Prompt Viewer Card -->
+            <div id="constructed-prompt-card" class="glass-card hidden" style="margin-bottom: 25px; border-left: 4px solid var(--primary, #6c5ce7); background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
+                <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="toggleConstructedPrompt()">
+                    <h3 style="margin: 0; color: var(--primary, #6c5ce7); font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> <strong>LLM Constructed Prompt</strong>
+                        <span style="font-size: 0.85rem; font-weight: normal; color: #636e72;">(Prompt Engineering & RAG Augmentation)</span>
+                    </h3>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button id="copy-prompt-btn" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; background: #f1f2f6; border: 1px solid #dfe6e9;" onclick="event.stopPropagation(); copyConstructedPrompt()"><i class="fa-solid fa-copy"></i> Copy Prompt</button>
+                        <i id="prompt-toggle-icon" class="fas fa-chevron-up" style="color: var(--primary, #6c5ce7); font-size: 1rem;"></i>
+                    </div>
+                </div>
+                <div id="constructed-prompt-body" style="margin-top: 15px;">
+                    <div style="margin-bottom: 10px; padding: 10px 14px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                        <strong style="color: #2d3436;"><i class="fa-solid fa-user"></i> User's Basic Input:</strong> 
+                        <span id="user-raw-input" style="color: var(--primary, #6c5ce7); font-weight: 600;"></span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #636e72; margin: 5px 0 10px 0;">
+                        <i class="fa-solid fa-circle-info"></i> The system transformed your basic prompt above into this engineered multi-agent prompt with role persona, Qdrant RAG grounding, and hardware limits:
+                    </p>
+                    <pre id="constructed-prompt-text" style="background: #2d3436; color: #74b9ff; padding: 15px; border-radius: 8px; font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; max-height: 320px; overflow-y: auto; font-family: 'Consolas', 'Courier New', monospace;"></pre>
+                </div>
+            </div>
+
+            <div id="architect-results" class="markdown-body hidden"></div>
+        </section>
+
+        <!-- Saved Projects Section -->
+        <section id="saved" class="tab-content">
+            <div class="glass-card input-card">
+                <h2><i class="fa-solid fa-folder-open"></i> Saved Blueprints</h2>
+                <div id="saved-list" class="saved-grid"></div>
+            </div>
+        </section>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>
