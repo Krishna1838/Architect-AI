@@ -328,123 +328,274 @@ function saveAsPdf() {
     const originalText = saveBtn ? saveBtn.innerHTML : '';
     if (saveBtn) {
         saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing PDF...';
     }
 
-    // Create a dedicated, clean container for PDF conversion
-    const printContainer = document.createElement('div');
-    printContainer.className = 'pdf-export-container';
-    printContainer.style.padding = '25px 35px';
-    printContainer.style.background = '#ffffff';
-    printContainer.style.color = '#1e293b';
-    printContainer.style.fontFamily = "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif";
-    printContainer.style.fontSize = '12pt';
-    printContainer.style.lineHeight = '1.6';
+    // Get the rendered HTML content
+    const renderedHtml = blueprintEl.innerHTML;
+    const taskTitle = (currentTask || 'ArchitectAI System Architecture Blueprint').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-    // Professional Header Banner
-    const headerEl = document.createElement('div');
-    headerEl.style.borderBottom = '3px solid #6c5ce7';
-    headerEl.style.paddingBottom = '15px';
-    headerEl.style.marginBottom = '25px';
-    headerEl.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: baseline;">
-            <h1 style="color: #6c5ce7; margin: 0; font-size: 22pt; font-weight: 700;">ArchitectAI</h1>
-            <span style="color: #64748b; font-size: 10pt; font-weight: 600;">Technical Architecture Blueprint</span>
-        </div>
-        <p style="color: #334155; margin: 10px 0 0 0; font-size: 11pt;"><strong>Task:</strong> ${currentTask || 'ArchitectAI Generated Project'}</p>
-        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 9pt;">Generated on ${new Date().toLocaleString()}</p>
-    `;
-    printContainer.appendChild(headerEl);
-
-    // Deep clone the rendered markdown result
-    const contentClone = blueprintEl.cloneNode(true);
-    contentClone.classList.remove('hidden');
-    contentClone.style.color = '#1e293b';
-    contentClone.style.background = 'transparent';
-    contentClone.style.boxShadow = 'none';
-    printContainer.appendChild(contentClone);
-
-    // Footer
-    const footerEl = document.createElement('div');
-    footerEl.style.marginTop = '35px';
-    footerEl.style.paddingTop = '15px';
-    footerEl.style.borderTop = '1px solid #e2e8f0';
-    footerEl.style.fontSize = '9pt';
-    footerEl.style.color = '#94a3b8';
-    footerEl.style.textAlign = 'center';
-    footerEl.innerText = 'ArchitectAI — From Idea to Architecture in Seconds | Project Blueprint';
-    printContainer.appendChild(footerEl);
-
-    const safeFilename = 'project_blueprint_' + (currentTask ? currentTask.substring(0, 20).replace(/[^a-zA-Z0-9]/g, '_') : 'report') + '.pdf';
-
-    // Check if html2pdf library is loaded
-    if (typeof html2pdf !== 'undefined') {
-        const opt = {
-            margin: [10, 10, 12, 10],
-            filename: safeFilename,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-        };
-
-        html2pdf().set(opt).from(printContainer).save().then(() => {
-            if (saveBtn) {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = originalText;
-            }
-        }).catch(err => {
-            console.error("html2pdf failed, falling back to print window:", err);
-            fallbackPrint(printContainer);
-            if (saveBtn) {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = originalText;
-            }
-        });
-    } else {
-        fallbackPrint(printContainer);
-        if (saveBtn) {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = originalText;
+    const printHtml = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ArchitectAI - Technical Blueprint</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 14mm 14mm 14mm 14mm;
         }
-    }
-}
 
-function fallbackPrint(container) {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-        return alert("Popup blocked! Please allow popups to save as PDF, or use Download Report.");
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #0f172a;
+            background: #ffffff;
+            font-size: 9.5pt;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Prevent split headings */
+        h1, h2, h3, h4, h5, h6 {
+            color: #0f172a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            margin-top: 14pt;
+            margin-bottom: 6pt;
+        }
+
+        h1 {
+            font-size: 16pt;
+            color: #4338ca;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 5pt;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 12.5pt;
+            color: #3730a3;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 3pt;
+        }
+
+        h3 {
+            font-size: 10.5pt;
+            color: #1e1b4b;
+        }
+
+        p, li {
+            color: #334155;
+            margin-top: 0;
+            margin-bottom: 5pt;
+            orphans: 3;
+            widows: 3;
+        }
+
+        ul, ol {
+            margin-top: 0;
+            margin-bottom: 8pt;
+            padding-left: 18px;
+        }
+
+        /* Clean Table Layout - never slices horizontally */
+        table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            margin: 10pt 0 !important;
+            page-break-inside: auto;
+        }
+
+        tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        th {
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+            font-weight: 600 !important;
+            text-align: left !important;
+            border: 1px solid #cbd5e1 !important;
+            padding: 6pt 8pt !important;
+            font-size: 8.5pt !important;
+        }
+
+        td {
+            border: 1px solid #cbd5e1 !important;
+            padding: 6pt 8pt !important;
+            font-size: 8.5pt !important;
+            color: #334155 !important;
+            vertical-align: top !important;
+        }
+
+        /* Code Blocks - wraps cleanly, never clips, never slices */
+        pre {
+            background-color: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            border-left: 3px solid #6366f1 !important;
+            border-radius: 4px !important;
+            padding: 8pt 10pt !important;
+            margin: 8pt 0 !important;
+            font-family: 'Consolas', 'Courier New', monospace !important;
+            font-size: 8pt !important;
+            line-height: 1.35 !important;
+            white-space: pre-wrap !important;
+            word-wrap: break-word !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            color: #0f172a !important;
+        }
+
+        code {
+            font-family: 'Consolas', 'Courier New', monospace !important;
+            font-size: 8pt !important;
+            background-color: #f1f5f9;
+            padding: 1pt 3pt;
+            border-radius: 3px;
+            color: #be123c;
+        }
+
+        pre code {
+            background-color: transparent !important;
+            padding: 0 !important;
+            color: inherit !important;
+        }
+
+        blockquote {
+            border-left: 3px solid #818cf8;
+            margin: 6pt 0;
+            padding: 4pt 10pt;
+            background-color: #f8fafc;
+            color: #475569;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .doc-header {
+            border-bottom: 2px solid #4f46e5;
+            padding-bottom: 6pt;
+            margin-bottom: 10pt;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .doc-title {
+            font-size: 16pt;
+            font-weight: 800;
+            color: #4338ca;
+            letter-spacing: -0.5px;
+        }
+
+        .doc-subtitle {
+            font-size: 9pt;
+            color: #64748b;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .doc-meta {
+            font-size: 8pt;
+            color: #94a3b8;
+            text-align: right;
+        }
+
+        .task-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 3px solid #4f46e5;
+            padding: 6pt 10pt;
+            margin-bottom: 12pt;
+            font-size: 8.5pt;
+            color: #334155;
+            border-radius: 4px;
+        }
+
+        .doc-footer {
+            margin-top: 16pt;
+            padding-top: 6pt;
+            border-top: 1px solid #e2e8f0;
+            font-size: 7.5pt;
+            color: #94a3b8;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="doc-header">
+        <div>
+            <span class="doc-title">ArchitectAI</span>
+            <span class="doc-subtitle">Technical System Blueprint</span>
+        </div>
+        <div class="doc-meta">
+            Generated on ${new Date().toLocaleDateString()}
+        </div>
+    </div>
+    
+    <div class="task-box">
+        <strong>Task:</strong> ${taskTitle}
+    </div>
+
+    <div class="content-body">
+        ${renderedHtml}
+    </div>
+
+    <div class="doc-footer">
+        ArchitectAI &mdash; From Idea to Architecture in Seconds &bull; Confidential Capstone Blueprint
+    </div>
+</body>
+</html>`;
+
+    // Use an invisible iframe for seamless, popup-blocker-proof printing
+    let printFrame = document.getElementById('print-iframe');
+    if (printFrame) {
+        document.body.removeChild(printFrame);
     }
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Project Blueprint - ArchitectAI</title>
-            <style>
-                body { font-family: 'Segoe UI', -apple-system, sans-serif; padding: 25px 35px; color: #1e293b; line-height: 1.6; }
-                h1, h2, h3 { color: #6c5ce7; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
-                pre, code { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-family: monospace; }
-                pre { padding: 12px; overflow-x: auto; }
-                table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-                th, td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
-                th { background: #f1f5f9; }
-                @media print {
-                    body { padding: 0; }
-                    @page { margin: 12mm; }
-                }
-            </style>
-        </head>
-        <body>
-            ${container.innerHTML}
-            <script>
-                window.onload = function() {
-                    window.print();
-                };
-            </script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
+    printFrame = document.createElement('iframe');
+    printFrame.id = 'print-iframe';
+    printFrame.style.position = 'fixed';
+    printFrame.style.right = '0';
+    printFrame.style.bottom = '0';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = '0';
+    document.body.appendChild(printFrame);
+
+    const frameDoc = printFrame.contentWindow.document;
+    frameDoc.open();
+    frameDoc.write(printHtml);
+    frameDoc.close();
+
+    // Trigger print once iframe content loads
+    setTimeout(() => {
+        try {
+            printFrame.contentWindow.focus();
+            printFrame.contentWindow.print();
+        } catch (e) {
+            console.error("Print frame error, falling back to popup:", e);
+            const w = window.open('', '_blank');
+            if (w) {
+                w.document.write(printHtml);
+                w.document.close();
+                w.focus();
+                w.print();
+            }
+        } finally {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
+        }
+    }, 350);
 }
 
 function downloadBlueprint() {
