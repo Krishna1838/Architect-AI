@@ -318,6 +318,135 @@ async function deleteProject(id) {
     }
 }
 
+function saveAsPdf() {
+    const blueprintEl = document.getElementById('architect-results');
+    if (!blueprintEl || !currentMarkdown) {
+        return alert("No blueprint to save as PDF!");
+    }
+
+    const saveBtn = document.getElementById('save-pdf-btn');
+    const originalText = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+    }
+
+    // Create a dedicated, clean container for PDF conversion
+    const printContainer = document.createElement('div');
+    printContainer.className = 'pdf-export-container';
+    printContainer.style.padding = '25px 35px';
+    printContainer.style.background = '#ffffff';
+    printContainer.style.color = '#1e293b';
+    printContainer.style.fontFamily = "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif";
+    printContainer.style.fontSize = '12pt';
+    printContainer.style.lineHeight = '1.6';
+
+    // Professional Header Banner
+    const headerEl = document.createElement('div');
+    headerEl.style.borderBottom = '3px solid #6c5ce7';
+    headerEl.style.paddingBottom = '15px';
+    headerEl.style.marginBottom = '25px';
+    headerEl.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h1 style="color: #6c5ce7; margin: 0; font-size: 22pt; font-weight: 700;">ArchitectAI</h1>
+            <span style="color: #64748b; font-size: 10pt; font-weight: 600;">Technical Architecture Blueprint</span>
+        </div>
+        <p style="color: #334155; margin: 10px 0 0 0; font-size: 11pt;"><strong>Task:</strong> ${currentTask || 'ArchitectAI Generated Project'}</p>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 9pt;">Generated on ${new Date().toLocaleString()}</p>
+    `;
+    printContainer.appendChild(headerEl);
+
+    // Deep clone the rendered markdown result
+    const contentClone = blueprintEl.cloneNode(true);
+    contentClone.classList.remove('hidden');
+    contentClone.style.color = '#1e293b';
+    contentClone.style.background = 'transparent';
+    contentClone.style.boxShadow = 'none';
+    printContainer.appendChild(contentClone);
+
+    // Footer
+    const footerEl = document.createElement('div');
+    footerEl.style.marginTop = '35px';
+    footerEl.style.paddingTop = '15px';
+    footerEl.style.borderTop = '1px solid #e2e8f0';
+    footerEl.style.fontSize = '9pt';
+    footerEl.style.color = '#94a3b8';
+    footerEl.style.textAlign = 'center';
+    footerEl.innerText = 'ArchitectAI — From Idea to Architecture in Seconds | Project Blueprint';
+    printContainer.appendChild(footerEl);
+
+    const safeFilename = 'project_blueprint_' + (currentTask ? currentTask.substring(0, 20).replace(/[^a-zA-Z0-9]/g, '_') : 'report') + '.pdf';
+
+    // Check if html2pdf library is loaded
+    if (typeof html2pdf !== 'undefined') {
+        const opt = {
+            margin: [10, 10, 12, 10],
+            filename: safeFilename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+
+        html2pdf().set(opt).from(printContainer).save().then(() => {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
+        }).catch(err => {
+            console.error("html2pdf failed, falling back to print window:", err);
+            fallbackPrint(printContainer);
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
+        });
+    } else {
+        fallbackPrint(printContainer);
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
+        }
+    }
+}
+
+function fallbackPrint(container) {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        return alert("Popup blocked! Please allow popups to save as PDF, or use Download Report.");
+    }
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Project Blueprint - ArchitectAI</title>
+            <style>
+                body { font-family: 'Segoe UI', -apple-system, sans-serif; padding: 25px 35px; color: #1e293b; line-height: 1.6; }
+                h1, h2, h3 { color: #6c5ce7; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
+                pre, code { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-family: monospace; }
+                pre { padding: 12px; overflow-x: auto; }
+                table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                th, td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+                th { background: #f1f5f9; }
+                @media print {
+                    body { padding: 0; }
+                    @page { margin: 12mm; }
+                }
+            </style>
+        </head>
+        <body>
+            ${container.innerHTML}
+            <script>
+                window.onload = function() {
+                    window.print();
+                };
+            </script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
 function downloadBlueprint() {
     if (!currentMarkdown) return alert("No blueprint to download!");
     let fullReport = currentMarkdown;

@@ -268,10 +268,42 @@ def render_architect_view():
 
         st.markdown(st.session_state.generated_blueprint["markdown_report"], unsafe_allow_html=True)
         
-        col_d, col_s = st.columns([1, 1])
+        col_pdf, col_d, col_s = st.columns([1, 1, 1])
+        with col_pdf:
+            clean_html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ArchitectAI Project Blueprint</title>
+    <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; padding: 30px; color: #1e293b; max-width: 900px; margin: auto; }}
+        h1, h2, h3 {{ color: #1E88E5; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }}
+        pre, code {{ background-color: #f1f5f9; padding: 3px 6px; border-radius: 4px; font-family: monospace; }}
+        pre {{ padding: 15px; overflow-x: auto; }}
+        table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+        th, td {{ border: 1px solid #cbd5e1; padding: 10px; text-align: left; }}
+        th {{ background-color: #f8fafc; }}
+        @media print {{ body {{ padding: 0; }} .no-print {{ display: none; }} }}
+    </style>
+</head>
+<body>
+    <div class="no-print" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px; margin-bottom: 20px; border-radius: 6px; text-align: center;">
+        <button onclick="window.print()" style="background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;">🖨️ Click to Print / Save as PDF</button>
+    </div>
+    <h1>ArchitectAI: Technical Blueprint</h1>
+    <div>{st.session_state.generated_blueprint["markdown_report"]}</div>
+    <script>window.onload = function() {{ window.print(); }};</script>
+</body>
+</html>"""
+            st.download_button(
+                label="📄 Save as PDF (Print View)",
+                data=clean_html,
+                file_name="project_blueprint.html",
+                mime="text/html"
+            )
         with col_d:
             st.download_button(
-                label="📥 Download Blueprint",
+                label="📥 Download Blueprint (.md)",
                 data=st.session_state.generated_blueprint["markdown_report"],
                 file_name="project_blueprint.md",
                 mime="text/markdown"
