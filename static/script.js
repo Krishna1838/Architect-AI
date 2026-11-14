@@ -335,6 +335,30 @@ function saveAsPdf() {
     const renderedHtml = blueprintEl.innerHTML;
     const taskTitle = (currentTask || 'ArchitectAI System Architecture Blueprint').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+    // Parse rendered HTML to link labels with subsequent code blocks
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(renderedHtml, 'text/html');
+
+    // For every pre, ensure the preceding heading or label paragraph has the class 'code-label'
+    doc.querySelectorAll('pre').forEach(pre => {
+        let prev = pre.previousElementSibling;
+        while (prev && prev.tagName === 'P' && prev.textContent.trim() === '') {
+            prev = prev.previousElementSibling;
+        }
+        if (prev) {
+            prev.classList.add('code-label');
+            prev.style.pageBreakAfter = 'avoid';
+            prev.style.breakAfter = 'avoid';
+        }
+    });
+
+    let processedHtml = doc.body.innerHTML
+        .replace(/\$\\le\s*/g, '≤ ')
+        .replace(/\$\\ge\s*/g, '≥ ')
+        .replace(/\\text\{([^}]+)\}/g, '$1')
+        .replace(/\$([0-9.]+[%s])\$/g, '$1')
+        .replace(/\$k\$/g, 'k');
+
     const printHtml = `<!DOCTYPE html>
 <html>
 <head>
@@ -343,7 +367,7 @@ function saveAsPdf() {
     <style>
         @page {
             size: A4 portrait;
-            margin: 14mm 14mm 14mm 14mm;
+            margin: 11mm 12mm 11mm 12mm;
         }
 
         * {
@@ -356,8 +380,8 @@ function saveAsPdf() {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             color: #0f172a;
             background: #ffffff;
-            font-size: 9.5pt;
-            line-height: 1.5;
+            font-size: 9pt;
+            line-height: 1.45;
             margin: 0;
             padding: 0;
         }
@@ -368,49 +392,61 @@ function saveAsPdf() {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             page-break-after: avoid !important;
             break-after: avoid !important;
-            margin-top: 14pt;
-            margin-bottom: 6pt;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            margin-top: 10pt;
+            margin-bottom: 3pt;
         }
 
         h1 {
-            font-size: 16pt;
+            font-size: 15pt;
             color: #4338ca;
             border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 5pt;
+            padding-bottom: 4pt;
             margin-top: 0;
         }
 
         h2 {
-            font-size: 12.5pt;
+            font-size: 12pt;
             color: #3730a3;
             border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 3pt;
+            padding-bottom: 2pt;
         }
 
         h3 {
-            font-size: 10.5pt;
+            font-size: 10pt;
             color: #1e1b4b;
+        }
+
+        /* Prevent code titles and file paths from being separated from their code block */
+        .code-label, p:has(+ pre) {
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            margin-bottom: 2pt !important;
+            font-weight: 600;
         }
 
         p, li {
             color: #334155;
             margin-top: 0;
-            margin-bottom: 5pt;
+            margin-bottom: 4pt;
             orphans: 3;
             widows: 3;
         }
 
         ul, ol {
             margin-top: 0;
-            margin-bottom: 8pt;
-            padding-left: 18px;
+            margin-bottom: 6pt;
+            padding-left: 16px;
         }
 
         /* Clean Table Layout - never slices horizontally */
         table {
             width: 100% !important;
             border-collapse: collapse !important;
-            margin: 10pt 0 !important;
+            margin: 8pt 0 !important;
             page-break-inside: auto;
         }
 
@@ -425,39 +461,39 @@ function saveAsPdf() {
             font-weight: 600 !important;
             text-align: left !important;
             border: 1px solid #cbd5e1 !important;
-            padding: 6pt 8pt !important;
-            font-size: 8.5pt !important;
+            padding: 5pt 7pt !important;
+            font-size: 8pt !important;
         }
 
         td {
             border: 1px solid #cbd5e1 !important;
-            padding: 6pt 8pt !important;
-            font-size: 8.5pt !important;
+            padding: 5pt 7pt !important;
+            font-size: 8pt !important;
             color: #334155 !important;
             vertical-align: top !important;
         }
 
-        /* Code Blocks - wraps cleanly, never clips, never slices */
+        /* Code Blocks - natural page breaks without artificial voids */
         pre {
             background-color: #f8fafc !important;
             border: 1px solid #e2e8f0 !important;
             border-left: 3px solid #6366f1 !important;
             border-radius: 4px !important;
-            padding: 8pt 10pt !important;
-            margin: 8pt 0 !important;
+            padding: 6pt 8pt !important;
+            margin: 3pt 0 8pt 0 !important;
             font-family: 'Consolas', 'Courier New', monospace !important;
-            font-size: 8pt !important;
-            line-height: 1.35 !important;
+            font-size: 7.2pt !important;
+            line-height: 1.25 !important;
             white-space: pre-wrap !important;
-            word-wrap: break-word !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
+            word-break: break-word !important;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
             color: #0f172a !important;
         }
 
         code {
             font-family: 'Consolas', 'Courier New', monospace !important;
-            font-size: 8pt !important;
+            font-size: 7.5pt !important;
             background-color: #f1f5f9;
             padding: 1pt 3pt;
             border-radius: 3px;
@@ -467,13 +503,15 @@ function saveAsPdf() {
         pre code {
             background-color: transparent !important;
             padding: 0 !important;
+            font-size: 7.2pt !important;
+            line-height: 1.25 !important;
             color: inherit !important;
         }
 
         blockquote {
             border-left: 3px solid #818cf8;
-            margin: 6pt 0;
-            padding: 4pt 10pt;
+            margin: 5pt 0;
+            padding: 3pt 8pt;
             background-color: #f8fafc;
             color: #475569;
             page-break-inside: avoid;
@@ -482,29 +520,29 @@ function saveAsPdf() {
 
         .doc-header {
             border-bottom: 2px solid #4f46e5;
-            padding-bottom: 6pt;
-            margin-bottom: 10pt;
+            padding-bottom: 5pt;
+            margin-bottom: 8pt;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
         }
 
         .doc-title {
-            font-size: 16pt;
+            font-size: 15pt;
             font-weight: 800;
             color: #4338ca;
             letter-spacing: -0.5px;
         }
 
         .doc-subtitle {
-            font-size: 9pt;
+            font-size: 8.5pt;
             color: #64748b;
             font-weight: 500;
             margin-left: 8px;
         }
 
         .doc-meta {
-            font-size: 8pt;
+            font-size: 7.5pt;
             color: #94a3b8;
             text-align: right;
         }
@@ -513,18 +551,18 @@ function saveAsPdf() {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
             border-left: 3px solid #4f46e5;
-            padding: 6pt 10pt;
-            margin-bottom: 12pt;
-            font-size: 8.5pt;
+            padding: 5pt 8pt;
+            margin-bottom: 10pt;
+            font-size: 8pt;
             color: #334155;
             border-radius: 4px;
         }
 
         .doc-footer {
-            margin-top: 16pt;
-            padding-top: 6pt;
+            margin-top: 14pt;
+            padding-top: 5pt;
             border-top: 1px solid #e2e8f0;
-            font-size: 7.5pt;
+            font-size: 7pt;
             color: #94a3b8;
             text-align: center;
         }
@@ -546,7 +584,7 @@ function saveAsPdf() {
     </div>
 
     <div class="content-body">
-        ${renderedHtml}
+        ${processedHtml}
     </div>
 
     <div class="doc-footer">
