@@ -38,8 +38,8 @@ graph TD
     end
     
     subgraph "Data Layer"
-        Backend -->|Leaderboard Data| GCS[Google Cloud Storage]
-        Backend -->|Project History| Firestore[Firebase]
+        Backend -->|Leaderboard Data| 
+        Backend -->|Project History| 
     end
     
     subgraph "Agent Workflow"
@@ -63,7 +63,7 @@ graph TD
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/SaiGayathriGudla-1184/Gen-ai-project-architect.git
+git clone https://github.com/Krishna1838/Architect-AI.git
 cd Gen-ai-project-architect
 pip install -r requirements.txt
 ```
