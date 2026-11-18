@@ -38,8 +38,8 @@ graph TD
     end
     
     subgraph "Data Layer"
-        Backend -->|Leaderboard Data| 
-        Backend -->|Project History| 
+        Backend -->|Leaderboard Data| GCS[Google Cloud Storage]
+        Backend -->|Project History| Firestore[Firebase]
     end
     
     subgraph "Agent Workflow"
